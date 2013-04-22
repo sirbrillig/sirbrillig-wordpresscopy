@@ -38,16 +38,16 @@
 # Copyright 2013 Payton Swick
 #
 class wordpresscopy (
-  $wp_site_file = 'wordpress.tar.gz',
-  $wp_db_dump = 'wordpress.mysql',
+  $wp_site_file = '/vagrant/wordpress.tar.gz',
+  $wp_db_dump = '/vagrant/wordpress.mysql',
   $new_site_host = 'localhost',
   $install_dir = '/opt/wordpress',
   $wp_owner = 'www-data',
   $wp_group = 'www-data',
-  $db_name,
-  $db_host,
-  $db_user,
-  $db_password,
+  $db_name = 'wordpress',
+  $db_host = 'localhost',
+  $db_user = 'wordpress',
+  $db_password = 'password',
 ) {
   validate_string($install_dir,$wp_site_file,$wp_db_dump,$new_site_host,$wp_owner,$wp_group,$db_name,$db_host,$db_user,$db_password)
 
