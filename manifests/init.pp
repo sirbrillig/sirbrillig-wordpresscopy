@@ -79,12 +79,10 @@ class wordpresscopy (
   database { "${db_name}":
     ensure => 'present',
     charset => 'utf8',
-  }
-
+  } ->
   database_user { "${db_user}@localhost":
     password_hash => mysql_password($db_password),
-  }
-
+  } ->
   database_grant { "${db_user}@localhost/${db_name}":
     privileges => ['all'],
   }
@@ -92,6 +90,6 @@ class wordpresscopy (
   exec { 'import database':
     unless => "test -z 'mysql -u${db_user} -p${db_password} ${db_name} -e \"show tables\"'", # FIXME: Not sure this is working!
     command => "mysql -u${db_user} -p${db_password} ${db_name} < ${wp_db_dump}",
-    require => Database["${db_name}"],
+    require => [ Database["${db_name}"], Database_user["${db_user}@localhost"], Database_grant["${db_user}@localhost/${db_name}"] ],
   }
 }
