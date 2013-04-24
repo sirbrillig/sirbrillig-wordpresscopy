@@ -7,3 +7,4 @@ description "Using two files, a tar of an existing WordPress install directory a
 
 ## Add dependencies, if any:
 # dependency 'username/name', '>= 1.2.0'
+dependency 'puppetlabs/mysql', '>= 0.6.1'

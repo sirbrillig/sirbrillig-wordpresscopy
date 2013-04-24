@@ -38,8 +38,8 @@
 # Copyright 2013 Payton Swick
 #
 class wordpresscopy (
-  $wp_site_file = '/vagrant/wordpress.tar.gz',
-  $wp_db_dump = '/vagrant/wordpress.mysql',
+  $wp_site_file = 'wordpress.tar.gz',
+  $wp_db_dump = 'wordpress.mysql',
   $new_site_host = 'localhost',
   $install_dir = '/opt/wordpress',
   $wp_owner = 'www-data',
@@ -56,21 +56,42 @@ class wordpresscopy (
     group  => $wp_group,
     mode   => '0644',
   }
+
   Exec {
     path      => ['/bin','/sbin','/usr/bin','/usr/sbin'],
     cwd       => $install_dir,
-    logoutput => 'on_failure',
-    user      => $wp_owner,
-    group     => $wp_group,
   }
 
-  exec { 'Extract WordPress':
-    command => "tar zxvf ${wp_site_file} -C ${install_dir}",
+  Database {
+      require => Class['mysql::server'],
+  }
+
+  file { "${install_dir}":
+    ensure => 'directory',
+  }
+
+  exec { 'extract wordpress':
+    command => "tar xzvf ${wp_site_file} -C ${install_dir} --strip-components 1",
     creates => "${install_dir}/index.php",
-    require => File[$install_dir],
+    require => File["${install_dir}"],
   }
 
-  exec { 'Import Database':
-    command => "mysql -h ${$db_host} -u ${db_user} -p ${db_password} ${db_name} < ${wp_db_dump}",
+  database { "${db_name}":
+    ensure => 'present',
+    charset => 'utf8',
+  }
+
+  database_user { "${db_user}@localhost":
+    password_hash => mysql_password($db_password),
+  }
+
+  database_grant { "${db_user}@localhost/${db_name}":
+    privileges => ['all'],
+  }
+
+  exec { 'import database':
+    unless => "test -z 'mysql -u${db_user} -p${db_password} ${db_name} -e \"show tables\"'", # FIXME: Not sure this is working!
+    command => "mysql -u${db_user} -p${db_password} ${db_name} < ${wp_db_dump}",
+    require => Database["${db_name}"],
   }
 }
