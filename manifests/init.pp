@@ -45,7 +45,6 @@ class wordpresscopy (
   $wp_owner = 'www-data',
   $wp_group = 'www-data',
   $db_name = 'wordpress',
-  $db_host = 'localhost',
   $db_user = 'wordpress',
   $db_password = 'password',
 ) {
