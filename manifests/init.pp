@@ -40,6 +40,7 @@
 class wordpresscopy (
   $wp_site_file = 'wordpress.tar.gz',
   $wp_db_dump = 'wordpress.mysql',
+  $old_site_host = 'myoldsite.net',
   $new_site_host = 'localhost',
   $install_dir = '/opt/wordpress',
   $wp_owner = 'www-data',
@@ -65,8 +66,18 @@ class wordpresscopy (
       require => Class['mysql::server'],
   }
 
+  # FIXME: require apache, php, mod-php, php5-gd, mod_rewrite
+
+  exec { 'enable mod_rewrite':
+    command =>"a2enmod rewrite", 
+    unless => "readlink -e /etc/apache2/mods-enabled/rewrite.load",
+    notify => Service['apache2'],
+    require => Package['apache2'],
+  }
+
   file { "${install_dir}":
     ensure => 'directory',
+    recurse => true,
   }
 
   exec { 'extract wordpress':
@@ -91,4 +102,19 @@ class wordpresscopy (
     command => "mysql -u${db_user} -p${db_password} ${db_name} < ${wp_db_dump}",
     require => [ Database["${db_name}"], Database_user["${db_user}@localhost"], Database_grant["${db_user}@localhost/${db_name}"] ],
   }
+
+  file { "${install_dir}/searchreplacedb2.php":
+    ensure => file,
+    source => 'puppet:///modules/wordpresscopy/searchreplacedb2.php',
+  } ->
+  file { "${install_dir}/searchreplacedb2cli.php":
+    ensure => file,
+    source => 'puppet:///modules/wordpresscopy/searchreplacedb2cli.php',
+    mode => '0766',
+  } ->
+  exec { 'run searchreplacedb':
+    command => "${install_dir}/searchreplacedb2cli.php --host localhost --user ${db_user} --database ${db_name} --pass '${$db_password}' --charset utf-8 --search '${old_site_host}' --replace '${new_site_host}'",
+    require => Exec['import database'],
+  }
+  #FIXME: delete searchreplacedb
 }
