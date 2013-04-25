@@ -84,6 +84,9 @@ class wordpresscopy (
     command => "tar xzvf ${wp_site_file} -C ${install_dir} --strip-components 1",
     creates => "${install_dir}/index.php",
     require => File["${install_dir}"],
+  } ->
+  exec { 'set wordpress permissions': 
+    command => "chown -R ${wp_owner}:${wp_group} ${install_dir}"
   }
 
   database { "${db_name}":
