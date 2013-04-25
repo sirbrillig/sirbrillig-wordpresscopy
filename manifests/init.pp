@@ -66,7 +66,8 @@ class wordpresscopy (
       require => Class['mysql::server'],
   }
 
-  # FIXME: require apache, php, mod-php, php5-gd, mod_rewrite
+  # FIXME: require apache, php, mod-php, php5-gd, mod_rewrite as module
+  # dependencies.
 
   exec { 'enable mod_rewrite':
     command =>"a2enmod rewrite", 
@@ -86,7 +87,8 @@ class wordpresscopy (
     require => File["${install_dir}"],
   } ->
   exec { 'set wordpress permissions': 
-    command => "chown -R ${wp_owner}:${wp_group} ${install_dir}"
+    command => "chown -R ${wp_owner}:${wp_group} ${install_dir}",
+    logoutput => false,
   }
 
   database { "${db_name}":
