@@ -8,25 +8,50 @@
 #
 # Document parameters here.
 #
-# [*sample_parameter*]
-#   Explanation of what this parameter affects and what it defaults to.
-#   e.g. "Specify one or more upstream ntp servers as an array."
+#  [*wp_site_file*]
+#   The .tar.gz file of the WordPress install directory we are duplicating. 
+#  [*wp_db_dump*]
+#   The .mysql database export (via mysqldump) of the WordPress database we are
+#   duplicating.
+#  [*old_site_host*]
+#   The hostname part of the URL of the site we are duplicating.
+#  [*new_site_host*]
+#   The hostname part of the URL of our new server. This is used to update the
+#   WordPress database for the new site.
+#  [*install_dir*]
+#   Defaults to /opt/wordpress. The directory in which to install our site.
+#  [*wp_owner*]
+#   Defaults to 'www-data'. The server username for the WordPress install;
+#   should be the user that runs the web server.
+#  [*wp_group*]
+#   Defaults to 'www-data'. The server group name for the WordPress install.
+#  [*db_name*]
+#   Defaults to 'wordpress'. The database name for WordPress on the new install.
+#   Should match the database name on the copied install or you will need to
+#   edit wp-config.php.
+#  [*db_user*]
+#   Defaults to 'wordpress'. The database user for WordPress on the new install.
+#   Should match the database user on the copied install or you will need to
+#   edit wp-config.php.
+#  [*db_password*]
+#   Defaults to 'password'. The database password for WordPress on the new install.
+#   Should match the database password on the copied install or you will need to
+#   edit wp-config.php.
 #
 # === Variables
 #
 # Here you should define a list of variables that this module would require.
 #
-# [*sample_variable*]
-#   Explanation of how this variable affects the funtion of this class and if it
-#   has a default. e.g. "The parameter enc_ntp_servers must be set by the
-#   External Node Classifier as a comma separated list of hostnames." (Note,
-#   global variables should not be used in preference to class parameters  as of
-#   Puppet 2.6.)
-#
 # === Examples
 #
-#  class { wordpresscopy:
-#    servers => [ 'pool.ntp.org', 'ntp.local.company.com' ]
+#  class { 'wordpresscopy': 
+#    wp_site_file => '/vagrant/myblog.tar.gz',
+#    wp_db_dump => '/vagrant/myblog.mysql',
+#    db_name => 'wordpress',
+#    db_user => 'myblog',
+#    db_password => 'password',
+#    old_site_host => 'othersite.foo.com',
+#    new_site_host => 'foobar.foo.com',
 #  }
 #
 # === Authors
@@ -65,9 +90,6 @@ class wordpresscopy (
   Database {
       require => Class['mysql::server'],
   }
-
-  # FIXME: require apache, php, mod-php, php5-gd, mod_rewrite as module
-  # dependencies.
 
   exec { 'enable mod_rewrite':
     command =>"a2enmod rewrite", 
