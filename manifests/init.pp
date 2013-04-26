@@ -138,15 +138,21 @@ class wordpresscopy (
     ensure => file,
     source => 'puppet:///modules/wordpresscopy/searchreplacedb2cli.php',
     mode => '0766',
-  } ->
-  exec { 'run searchreplacedb':
+  }
+
+  exec { 'run searchreplacedb':# FIXME: this only runs on the second try
     command => "${install_dir}/searchreplacedb2cli.php --host localhost --user ${db_user} --database ${db_name} --pass '${$db_password}' --charset utf-8 --search '${old_site_host}' --replace '${new_site_host}'",
-    require => Exec['import database'],
-  } ->
+    require => [ Exec['import database'], File["${install_dir}/searchreplacedb2cli.php"], File["${install_dir}/searchreplacedb2.php"] ],
+  }
+
   exec { 'delete searchreplacedb2.php':
-    command => "rm -f ${install_dir}/searchreplacedb2.php"
+    command => "rm -f ${install_dir}/searchreplacedb2.php",
+    require => Exec['run searchreplacedb'],
   } ->
   exec { 'delete searchreplacedb2cli.php':
-    command => "rm -f ${install_dir}/searchreplacedb2cli.php"
+    command => "rm -f ${install_dir}/searchreplacedb2cli.php",
+    require => Exec['run searchreplacedb'],
   }
+
+  notice("Your IP address is ${ipaddress_eth1}")
 }
