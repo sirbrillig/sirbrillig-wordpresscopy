@@ -142,6 +142,11 @@ class wordpresscopy (
   exec { 'run searchreplacedb':
     command => "${install_dir}/searchreplacedb2cli.php --host localhost --user ${db_user} --database ${db_name} --pass '${$db_password}' --charset utf-8 --search '${old_site_host}' --replace '${new_site_host}'",
     require => Exec['import database'],
+  } ->
+  exec { 'delete searchreplacedb2.php':
+    command => "rm -f ${install_dir}/searchreplacedb2.php"
+  } ->
+  exec { 'delete searchreplacedb2cli.php':
+    command => "rm -f ${install_dir}/searchreplacedb2cli.php"
   }
-  #FIXME: delete searchreplacedb
 }
